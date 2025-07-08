@@ -22,106 +22,10 @@
 
 #include <locale.h>
 
-//
-//
-//int rollDice() {
-//    return rand() % 6 + 1;
-//}
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
-//
-//
-//GLuint CreateTextTexture(const std::string& text, const char* fontPath = "arial.ttf", int fontSize = 8) {
-//	// Инициализация FreeType
-//	FT_Library ft;
-//	if (FT_Init_FreeType(&ft)) {
-//		std::cerr << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
-//		return 0;
-//	}
-//
-//	// Загрузка шрифта
-//	FT_Face face;
-//	if (FT_New_Face(ft, fontPath, 0, &face)) {
-//		std::cerr << "ERROR::FREETYPE: Failed to load font" << std::endl;
-//		FT_Done_FreeType(ft);
-//		return 0;
-//	}
-//
-//	// Установка размера шрифта
-//	FT_Set_Pixel_Sizes(face, 0, fontSize);
-//
-//	// 1. Рассчитываем размеры текстуры
-//	int textureWidth = 0;
-//	int textureHeight = 0;
-//
-//	// Проходим по всем символам строки для вычисления размеров
-//	for (char c : text) {
-//		if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
-//			std::cerr << "ERROR::FREETYPE: Failed to load Glyph" << std::endl;
-//			continue;
-//		}
-//
-//		textureWidth += face->glyph->bitmap.width;
-//		textureHeight = max(textureHeight, (int)face->glyph->bitmap.rows);
-//	}
-//
-//	// Добавляем небольшой отступ между символами
-//	textureWidth += text.length() * 2;
-//
-//	// 2. Создаём временный буфер для текстуры
-//	std::vector<unsigned char> textureData(textureWidth * textureHeight, 0);
-//
-//	// 3. Рендерим каждый символ в буфер
-//	int xOffset = 0;
-//	for (char c : text) {
-//		if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
-//			continue;
-//		}
-//
-//		FT_Bitmap bitmap = face->glyph->bitmap;
-//
-//		for (unsigned int y = 0; y < bitmap.rows; y++) {
-//			unsigned int flipped_y = bitmap.rows - 1 - y;
-//			for (unsigned int x = 0; x < bitmap.width; x++) {
-//				textureData[(flipped_y * textureWidth) + xOffset + x] =
-//					bitmap.buffer[y * bitmap.width + x];
-//			}
-//		}
-//		xOffset += bitmap.width + 2; // +2 пикселя отступ
-//	}
-//
-//	// 4. Создаём текстуру OpenGL
-//	GLuint textureID;
-//	glGenTextures(1, &textureID);
-//	glBindTexture(GL_TEXTURE_2D, textureID);
-//
-//	// Загружаем данные в текстуру
-//	glTexImage2D(
-//		GL_TEXTURE_2D,
-//		0,
-//		GL_RED,
-//		textureWidth,
-//		textureHeight,
-//		0,
-//		GL_RED,
-//		GL_UNSIGNED_BYTE,
-//		textureData.data()
-//	);
-//
-//	// Устанавливаем параметры текстуры
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//
-//	// Очищаем ресурсы FreeType
-//	FT_Done_Face(face);
-//	FT_Done_FreeType(ft);
-//
-//	return textureID;
-//}
 
 int main() {
  
@@ -181,7 +85,12 @@ int main() {
 
 	doubleGrid.FillText();
 
-    int highlightedDice = 0;
+	RamcaView rm;
+	rm.Create(0.45, 0.09f, 0.37f, 1.82f);
+  
+	RamcaView rmCubeSelect;
+	rmCubeSelect.SetBorderWidth(0.01f);
+	rmCubeSelect.Create(0.3, 0.09f, 2.12f, 1.52f);
 
  
     while (!glfwWindowShouldClose(window)) {
@@ -196,39 +105,44 @@ int main() {
         }
         if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
             Sleep(100);
-            highlightedDice = (highlightedDice + 1) % N_COUNT_DICE;
+			arrayCubes.NextSelect();
         }
         if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
             Sleep(100);
-            highlightedDice = (highlightedDice - 1 + N_COUNT_DICE) % N_COUNT_DICE;
+			arrayCubes.PrevSelect();
         }
 		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
 			Sleep(100);
-			arrayCubes.stateUp[highlightedDice] = 1;
+			arrayCubes.SetUp();
 		}
 		if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
 			Sleep(100);
-			arrayCubes.stateUp[highlightedDice] = 0;
+			arrayCubes.SetDown();
 		}
 
   
-       arrayCubes.Draw(highlightedDice);
+       arrayCubes.Draw();
 
      
+	   
 
 	   float x = 25.0f;
 	   float y = HEIGHT - 50.0f;
 
 	   float scale = 0.5f;
 
-	   txt.RenderText("player1", x, y, scale, glm::vec3(1.0f, 1.0f, 0.4f));
+	   txt.RenderText(L"Игрок1", x, y, scale, glm::vec3(1.0f, 1.0f, 0.4f));
 
 	   x = 335.0f;
-	   txt.RenderText("player2", x, y, scale, glm::vec3(1.0f, 1.0f, 0.4f));
+	   txt.RenderText(L"player2", x, y, scale, glm::vec3(1.0f, 1.0f, 0.4f));
 
+	   rm.Draw(projection);
+
+	   rmCubeSelect.Draw(projection);
 	 
-	    doubleGrid.Draw(projection);
+	   doubleGrid.Draw(projection);
 	
+	  
 
         glfwSwapBuffers(window);
         glfwPollEvents();

@@ -476,7 +476,7 @@ private:
     GLuint VAO, VBO, EBO;
 };
 
-const int N_COUNT_DICE = 6;
+const int N_COUNT_DICE = 5;
 
 class ArrayCubeView
 {
@@ -485,8 +485,9 @@ public:
 
     std::vector<int> diceValues;
     std::vector<int> stateUp;
+    int highlightedDice;
 
-    ArrayCubeView()
+    ArrayCubeView():highlightedDice(0)
     {
         diceValues.resize(N_COUNT_DICE, 1);
         stateUp.resize(N_COUNT_DICE, 0);
@@ -500,7 +501,7 @@ public:
         startTime = glfwGetTime();
     }
 
-    void Draw( int highlightedDice )
+    void Draw(  )
     {
         GLuint shaderProgram = cubeView.shaderProgram;
         float currentTime = glfwGetTime() - startTime;
@@ -518,7 +519,7 @@ public:
         float gap = 0.005f; // промежуток между костями
         float totalWidth = 6 * diceWidth + 5 * gap; // общая ширина
         //  float startX = -totalWidth / 2.0f + diceWidth / 2.0f; // начальное смещение
-        float startX = 1.0f - totalWidth + 0.02;
+        float startX = 1.0f - totalWidth + 0.05;
         float yOffset = 0.4f;
         float UpYOffset = 0.2f;
 
@@ -539,6 +540,24 @@ public:
             if (stateUp[i] == 0)
                 diceValues[i] = rollDice();
         }
+    }
+
+    int NextSelect() {
+        highlightedDice = (highlightedDice + 1) % N_COUNT_DICE;
+        return highlightedDice;
+    }
+
+    int PrevSelect() {
+        highlightedDice = (highlightedDice - 1 + N_COUNT_DICE) % N_COUNT_DICE;
+        return highlightedDice;
+    }
+
+    void SetUp() {
+        stateUp[highlightedDice] = 1;
+    }
+
+    void SetDown() {
+        stateUp[highlightedDice] = 0;
     }
 
     void Delete() {
@@ -588,7 +607,7 @@ public:
 
     GLuint shaderProgram;
 
-    RamcaView() {
+    RamcaView():borderWidth(0.05f){
 
         shader.Compile(ramcaVertexShaderSource, ramcaFragmentShaderSource);
         shaderProgram = shader.ID;
@@ -654,7 +673,7 @@ public:
         // Параметры рамки
         glUniform4f(glGetUniformLocation(shaderProgram, "borderColor"), 1.0f, 0.0f, 0.0f, 1.0f); // Красная рамка
         glUniform4f(glGetUniformLocation(shaderProgram, "backgroundColor"), 0.2f, 0.2f, 0.2f, 1.0f); // Серый фон
-        glUniform1f(glGetUniformLocation(shaderProgram, "borderWidth"), 0.05f); // Ширина рамки 5%
+        glUniform1f(glGetUniformLocation(shaderProgram, "borderWidth"), borderWidth); // Ширина рамки 5%
 
         // Текст
         glUniform1i(glGetUniformLocation(shaderProgram, "hasText"), textTexture ? 1 : 0);
@@ -675,6 +694,10 @@ public:
        if (!prevBlend) glDisable(GL_BLEND);
        glUseProgram(prevProgram);
 
+    }
+
+    void SetBorderWidth(float _borderWidth) {
+        borderWidth = _borderWidth;
     }
 
 public:
@@ -714,7 +737,7 @@ public:
     GLuint textTexture;
     float width, height;
     float posX, posY;
-
+    float borderWidth;
 
 };
 
@@ -1338,7 +1361,7 @@ public:
         }
     }
 
-    void RenderText(std::string text, float x, float y, float scale, glm::vec3 color)
+    void RenderText(std::wstring text, float x, float y, float scale, glm::vec3 color)
     {
         // Сохраняем состояния
         GLint prevProgram;
@@ -1403,7 +1426,7 @@ private:
         GLuint Advance;       // Смещение до следующего символа
     };
 
-    std::map<GLchar, Character> Characters;
+    std::map<wchar_t, Character> Characters;
 
     GLuint VAO, VBO;
     GLuint shaderProgram;
@@ -1452,46 +1475,57 @@ private:
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
     }
 
+  
     void LoadCharacters(FT_Face face)
     {
-
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
+        // Загружаем базовый набор ASCII (0-127)
         for (unsigned char c = 0; c < 128; c++) {
-            if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
-                std::cerr << "Failed to load Glyph " << c << std::endl;
-                continue;
-            }
-
-            GLuint texture;
-            glGenTextures(1, &texture);
-            glBindTexture(GL_TEXTURE_2D, texture);
-            glTexImage2D(
-                GL_TEXTURE_2D,
-                0,
-                GL_RED,
-                face->glyph->bitmap.width,
-                face->glyph->bitmap.rows,
-                0,
-                GL_RED,
-                GL_UNSIGNED_BYTE,
-                face->glyph->bitmap.buffer
-            );
-
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-            Character character = {
-                texture,
-                glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
-                glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-                static_cast<GLuint>(face->glyph->advance.x)
-            };
-
-            Characters.insert(std::pair<char, Character>(c, character));
+            LoadCharacter(face, c);
         }
-        glBindTexture(GL_TEXTURE_2D, 0);
+
+        // Загружаем кириллицу (Unicode диапазон для русских букв)
+        // Это коды символов от U+0400 до U+04FF
+        for (wchar_t c = 0x0400; c <= 0x04FF; c++) {
+            LoadCharacter(face, c);
+        }
+    }
+
+    void LoadCharacter(FT_Face face, wchar_t c)
+    {
+        if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
+            std::cerr << "Failed to load Glyph " << (int)c << std::endl;
+            return;
+        }
+
+        GLuint texture;
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GL_RED,
+            face->glyph->bitmap.width,
+            face->glyph->bitmap.rows,
+            0,
+            GL_RED,
+            GL_UNSIGNED_BYTE,
+            face->glyph->bitmap.buffer
+        );
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        Character character = {
+            texture,
+            glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+            glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+            static_cast<GLuint>(face->glyph->advance.x)
+        };
+
+        Characters.insert(std::pair<wchar_t, Character>(c, character));
     }
 };
