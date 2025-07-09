@@ -476,9 +476,17 @@ private:
     GLuint VAO, VBO, EBO;
 };
 
+
+class IObjectDraw
+{
+public:
+    virtual void Draw() = 0;
+    virtual ~IObjectDraw(){}
+};
+
 const int N_COUNT_DICE = 5;
 
-class ArrayCubeView
+class ArrayCubeView: public IObjectDraw
 {
     
 public:
@@ -492,6 +500,7 @@ public:
         diceValues.resize(N_COUNT_DICE, 1);
         stateUp.resize(N_COUNT_DICE, 0);
         cubeView.Create();
+        srand(time(0));
     }
 
     void Create() 
@@ -501,7 +510,7 @@ public:
         startTime = glfwGetTime();
     }
 
-    void Draw(  )
+    void Draw()
     {
         GLuint shaderProgram = cubeView.shaderProgram;
         float currentTime = glfwGetTime() - startTime;
@@ -601,11 +610,12 @@ private :
    
 };
 
-class RamcaView
+class RamcaView : public IObjectDraw
 {
 public:
 
     GLuint shaderProgram;
+    glm::mat4 *projection = nullptr;
 
     RamcaView():borderWidth(0.05f){
 
@@ -649,8 +659,8 @@ public:
         glDeleteProgram(shaderProgram);
     }
 
-    void Draw(glm::mat4 projection) {
-
+    void Draw() {
+        if (projection == nullptr) return;
         // Сохраняем текущие состояния
         GLint prevProgram;
         GLboolean prevBlend;
@@ -667,7 +677,7 @@ public:
         model = glm::translate(model, glm::vec3(posX, posY, 0.0f));
         model = glm::scale(model, glm::vec3(width, height, 1.0f));
 
-        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(*projection));
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
         // Параметры рамки
@@ -741,358 +751,13 @@ public:
 
 };
 
-//
-//class RamcaView
-//{
-//public:
-//
-//    float posX, posY;
-//    enum class TextAlignment {
-//        LEFT,    // По левому краю
-//        CENTER,  // По центру
-//        RIGHT    // По правому краю
-//    };
-//   
-//    GLuint shaderProgram;
-//
-//    RamcaView() {
-//        shader.Compile(ramcaVertexShaderSource, ramcaFragmentShaderSource);
-//        // Текстовый шейдер
-//        textShader.Compile(_vertexShaderSource, _fragmentShaderSource);
-//        shaderProgram = shader.ID;
-//        textShaderProgram = textShader.ID;
-//        initializeTextRendering();
-//    }
-//
-//    ~RamcaView() {
-//        Delete();
-//    }
-//
-//    void Delete() {
-//        glDeleteVertexArrays(1, &VAO);
-//        glDeleteBuffers(1, &VBO);
-//        glDeleteBuffers(1, &EBO);
-//        glDeleteProgram(shaderProgram);
-//        if (texture) glDeleteTextures(1, &texture);
-//        if (textVAO) glDeleteVertexArrays(1, &textVAO);
-//        if (textVBO) glDeleteBuffers(1, &textVBO);
-//    }
-//
-//    void Create(float w, float h, float x = 0.0f, float y = 0.0f) {
-//        width = w;
-//        height = h;
-//        posX = x;
-//        posY = y;
-//        glGenVertexArrays(1, &VAO);
-//        glGenBuffers(1, &VBO);
-//        glGenBuffers(1, &EBO);
-//        glBindVertexArray(VAO);
-//        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-//        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-//        setupBuffers();
-//    }
-//
-//    void DeleteView() {
-//        glDeleteVertexArrays(1, &VAO);
-//        glDeleteBuffers(1, &VBO);
-//        glDeleteBuffers(1, &EBO);
-//        glDeleteProgram(shaderProgram);
-//        if ( texture) glDeleteTextures(1, &texture);
-//    }
-//
-//    void Draw(glm::mat4 projection) {
-//        glUseProgram(shaderProgram);
-//
-//        // Настройка матриц преобразования
-//        glm::mat4 model = glm::mat4(1.0f);
-//        model = glm::translate(model, glm::vec3(posX, posY, 0.0f));
-//        model = glm::scale(model, glm::vec3(width, height, 1.0f));
-//
-//        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-//        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
-//
-//        // Параметры рамки и фона
-//        glUniform4f(glGetUniformLocation(shaderProgram, "borderColor"), borderColor.r, borderColor.g, borderColor.b, borderColor.a);
-//        glUniform4f(glGetUniformLocation(shaderProgram, "backgroundColor"), bgColor.r, bgColor.g, bgColor.b, bgColor.a);
-//        glUniform1f(glGetUniformLocation(shaderProgram, "borderWidth"), borderWidth);
-//
-//        // Отрисовка текста
-//        glUniform1i(glGetUniformLocation(shaderProgram, "hasText"), texture ? 1 : 0);
-//        if (texture) {
-//            glActiveTexture(GL_TEXTURE0);
-//            glBindTexture(GL_TEXTURE_2D, texture);
-//        }
-//
-//        glBindVertexArray(VAO);
-//        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-//
-//        // Отрисовка текста, если он есть
-//        if (!textString.empty()) {
-//            renderText();
-//        }
-//
-//        glDisable(GL_BLEND);
-//        glBindTexture(GL_TEXTURE_2D, 0);
-//        glBindVertexArray(0);
-//    }
-//
-//    // Методы для работы с текстом
-//    void SetText(const std::string& text, float scale = 1.0f, glm::vec3 color = glm::vec3(1.0f)) {
-//        textString = text;
-//        textScale = scale;
-//        textColor = color;
-//        updateTextTexture();
-//    }
-//
-//    void SetTextPosition(float x, float y) {
-//        textPosX = x;
-//        textPosY = y;
-//    }
-//
-//    void SetTextAlignment(TextAlignment alignment) {
-//        textAlignment = alignment;
-//    }
-//
-//    void SetBorderColor(glm::vec4 color) {
-//        borderColor = color;
-//    }
-//
-//    void SetBackgroundColor(glm::vec4 color) {
-//        bgColor = color;
-//    }
-//
-//    void SetBorderWidth(float width) {
-//        borderWidth = width;
-//    }
-//
-//private:
-//   
-//
-//    void initializeTextRendering() {
-//
-//        glEnable(GL_BLEND);
-//        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//        // Инициализация FreeType и загрузка шрифта
-//        if (FT_Init_FreeType(&ft)) {
-//            std::cerr << "ERROR::FREETYPE: Не удалось инициализировать FreeType" << std::endl;
-//            return;
-//        }
-//
-//        if (FT_New_Face(ft, "fonts/arial.ttf", 0, &face)) {
-//            std::cerr << "ERROR::FREETYPE: Не удалось загрузить шрифт" << std::endl;
-//            return;
-//        }
-//
-//        FT_Set_Pixel_Sizes(face, 0, 48);
-//
-//        LoadCharacters(face);
-//
-//        FT_Done_Face(face);
-//        FT_Done_FreeType(ft);
-//
-//        // Настройка VAO/VBO для текста
-//        glGenVertexArrays(1, &textVAO);
-//        glGenBuffers(1, &textVBO);
-//        glBindVertexArray(textVAO);
-//        glBindBuffer(GL_ARRAY_BUFFER, textVBO);
-//        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
-//        glEnableVertexAttribArray(0);
-//        glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
-//        glBindBuffer(GL_ARRAY_BUFFER, 0);
-//        glBindVertexArray(0);
-//
-//
-//        glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(width), 0.0f, static_cast<float>(height));
-//        glUseProgram(textShaderProgram);
-//        glUniformMatrix4fv(glGetUniformLocation(textShaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
-//    }
-//
-//
-//    void LoadCharacters(FT_Face face) {
-//
-//        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-//
-//        for (unsigned char c = 0; c < 128; c++) {
-//            if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
-//                std::cerr << "Failed to load Glyph " << c << std::endl;
-//                continue;
-//            }
-//
-//         //   GLuint texture;
-//            glGenTextures(1, &texture);
-//            glBindTexture(GL_TEXTURE_2D, texture);
-//            glTexImage2D(
-//                GL_TEXTURE_2D,
-//                0,
-//                GL_RED,
-//                face->glyph->bitmap.width,
-//                face->glyph->bitmap.rows,
-//                0,
-//                GL_RED,
-//                GL_UNSIGNED_BYTE,
-//                face->glyph->bitmap.buffer
-//            );
-//
-//            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-//            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-//            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//
-//            Character character = {
-//                texture,
-//                glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
-//                glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-//                static_cast<GLuint>(face->glyph->advance.x)
-//            };
-//
-//            Characters.insert(std::pair<char, Character>(c, character));
-//        }
-//        glBindTexture(GL_TEXTURE_2D, 0);
-//    }
-//
-//    void renderText() {
-//
-// 
-//        glUseProgram(textShaderProgram);
-//        glUniform3f(glGetUniformLocation(textShaderProgram, "textColor"), textColor.x, textColor.y, textColor.z);
-//        glActiveTexture(GL_TEXTURE0);
-//        glBindVertexArray(textVAO);
-//
-//        // Вычисляем позицию текста в зависимости от выравнивания
-//        float x = textPosX;
-//        float y = textPosY;
-//
-//        if (textAlignment != TextAlignment::LEFT) {
-//            float textWidth = 0.0f;
-//            for (std::string::const_iterator c = textString.begin(); c != textString.end(); c++) {
-//                Character ch = Characters[*c];
-//                textWidth += (ch.Advance >> 6) * textScale;
-//            }
-//
-//            if (textAlignment == TextAlignment::CENTER) {
-//                x -= textWidth / 2.0f;
-//            }
-//            else if (textAlignment == TextAlignment::RIGHT) {
-//                x -= textWidth;
-//            }
-//        }
-//
-//        // Отрисовываем каждый символ
-//        for (std::string::const_iterator c = textString.begin(); c != textString.end(); c++) {
-//            Character ch = Characters[*c];
-//
-//            float xpos = x + ch.Bearing.x * textScale;
-//            float ypos = y - (ch.Size.y - ch.Bearing.y) * textScale;
-//
-//            float w = ch.Size.x * textScale;
-//            float h = ch.Size.y * textScale;
-//
-//            // Обновляем VBO для каждого символа
-//            float vertices[6][4] = {
-//                { xpos,     ypos + h,   0.0f, 0.0f },
-//                { xpos,     ypos,       0.0f, 1.0f },
-//                { xpos + w, ypos,       1.0f, 1.0f },
-//
-//                { xpos,     ypos + h,   0.0f, 0.0f },
-//                { xpos + w, ypos,       1.0f, 1.0f },
-//                { xpos + w, ypos + h,   1.0f, 0.0f }
-//            };
-//
-//            // Отрисовываем текстуру глифа на кваде
-//            glBindTexture(GL_TEXTURE_2D, ch.TextureID);
-//
-//            // Обновляем VBO
-//            glBindBuffer(GL_ARRAY_BUFFER, textVBO);
-//            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-//         //   glBindBuffer(GL_ARRAY_BUFFER, 0);
-//
-//            // Отрисовываем квад
-//            glDrawArrays(GL_TRIANGLES, 0, 6);
-//
-//            // Перемещаем курсор для следующего символа
-//            x += (ch.Advance >> 6) * textScale;
-//        }
-//
-//        glBindVertexArray(0);
-//        glBindTexture(GL_TEXTURE_2D, 0);
-//    }
-//
-//    void updateTextTexture() {
-//        // Здесь можно реализовать рендеринг текста в текстуру
-//    }
-//
-//    void setupBuffers() {
-//        float vertices[] = {
-//            // позиции    // текстурные координаты
-//            -1.0f, -1.0f, 0.0f, 0.0f,
-//             1.0f, -1.0f, 1.0f, 0.0f,
-//             1.0f,  1.0f, 1.0f, 1.0f,
-//            -1.0f,  1.0f, 0.0f, 1.0f
-//        };
-//
-//        unsigned int indices[] = {
-//            0, 1, 2,
-//            2, 3, 0
-//        };
-//
-//        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-//        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-//        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-//        glEnableVertexAttribArray(0);
-//        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-//        glEnableVertexAttribArray(1);
-//        glBindBuffer(GL_ARRAY_BUFFER, 0);
-//        glBindVertexArray(0);
-//    }
-//
-//private:
-//    // Компоненты для рендеринга
-//    Shader shader;
-//    Shader textShader;      // Специально для текста
-//    GLuint VAO, VBO, EBO;
-//  //  GLuint textTexture;
-//    GLuint texture;
-//
-//    // Компоненты для отрисовки текста
-//    struct Character {
-//        GLuint TextureID;    // ID текстуры глифа
-//        glm::ivec2 Size;     // Размер глифа
-//        glm::ivec2 Bearing;  // Смещение от базовой линии
-//        GLuint Advance;      // Горизонтальное смещение до следующего глифа
-//    };
-//
-//    std::map<char, Character> Characters;
-//    GLuint textVAO, textVBO;
-//    GLuint textShaderProgram;
-//    FT_Library ft;
-//    FT_Face face;
-//
-//    // Свойства вида
-//    float width, height;
-//  
-//
-//    // Свойства текста
-//    std::string textString;
-//    float textScale = 1.0f;
-//    glm::vec3 textColor;
-//    float textPosX = 0.0f, textPosY = 0.0f;
-//
-//    // Рамка и фон
-//    glm::vec4 borderColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-//    glm::vec4 bgColor = glm::vec4(0.2f, 0.2f, 0.2f, 1.0f);
-//    float borderWidth = 0.05f;
-//
-//    TextAlignment textAlignment = TextAlignment::LEFT;
-//};
-//
-//
-
 class GridView {
 public:
     std::vector<std::vector<RamcaView>> grid;
     int cols, rows;
     float cellWidth, cellHeight;
     float paddingX, paddingY;
+    glm::mat4* projection = nullptr;
 
     // Новый конструктор с явным указанием размеров сетки
     GridView(int cols, int rows,
@@ -1113,10 +778,12 @@ public:
         }
     }
 
-    void Draw(glm::mat4 projection) {
+    void Draw() {
+        if (projection == nullptr) return;
         for (auto& row : grid) {
             for (auto& cell : row) {
-                cell.Draw(projection);
+                cell.projection = projection;
+                cell.Draw();
             }
         }
     }
@@ -1258,11 +925,13 @@ private:
 };
 
 
-class DoubleGridView {
+class DoubleGridView : public IObjectDraw
+{
 public:
     GridView leftGrid;
     GridView rightGrid;
     float gapSize; // Размер зазора между сетками
+    
 
     DoubleGridView(float cellWidth, float cellHeight,
         float gap = 0.05f,  // Добавляем параметр зазора
@@ -1271,7 +940,6 @@ public:
         rightGrid(7, 16, cellWidth, cellHeight, paddingX, paddingY),
         gapSize(gap)
     {
-        
         float singleGridWidth = cellWidth * 7 + paddingX * 6;
 
         const float offsetX = 0.0, offsetY = -0.2;
@@ -1293,6 +961,12 @@ public:
         text.SetTextParametr("fonts/arial.ttf", 48);
     }
 
+    void SetProjection(glm::mat4 &projection) 
+    {
+        leftGrid.projection = &projection;
+        rightGrid.projection = &projection;
+    }
+
     void FillText() {
    
         FillSymbol(leftGrid);
@@ -1302,10 +976,10 @@ public:
 
 
     // Отрисовка обеих сеток
-    void Draw(glm::mat4 projection) {
+    void Draw() {
 
-        leftGrid.Draw(projection);
-        rightGrid.Draw(projection);
+        leftGrid.Draw();
+        rightGrid.Draw();
       
     }
 
@@ -1528,4 +1202,28 @@ private:
 
         Characters.insert(std::pair<wchar_t, Character>(c, character));
     }
+};
+
+
+class PlayerName : public IObjectDraw
+{
+public:
+    std::wstring name;
+    bool isActive ;
+    float x;
+    float y;
+    float scale;
+
+    PlayerName(Text& _txt) 
+        : txt(_txt),x(25.0f), y(HEIGHT - 50.0f), scale(0.5f), isActive(false)
+    {
+    }
+ 
+    void Draw()
+    {
+        txt.RenderText(name, x, y, scale, glm::vec3(1.0f, 1.0f, 0.4f));
+    }
+
+private:
+    Text &txt;
 };
