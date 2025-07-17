@@ -751,6 +751,8 @@ public:
 
 };
 
+
+
 class GridView {
 public:
     std::vector<std::vector<RamcaView>> grid;
@@ -822,7 +824,7 @@ public:
     }
 
 
-    GLuint CreateTextTexture(const std::string& text) {
+    GLuint CreateTextTexture(const std::wstring& text) {
 
 
         // 1. Рассчитываем размеры текстуры
@@ -830,7 +832,7 @@ public:
         int textureHeight = 0;
 
         // Проходим по всем символам строки для вычисления размеров
-        for (char c : text) {
+        for (wchar_t c : text) {
             if (FT_Load_Char(face, c, FT_LOAD_RENDER | FT_LOAD_FORCE_AUTOHINT)) {
                 std::cerr << "ERROR::FREETYPE: Failed to load Glyph" << std::endl;
                 continue;
@@ -851,7 +853,7 @@ public:
 
         // 3. Рендерим каждый символ в буфер
         int xOffset = 0;
-        for (char c : text) {
+        for (wchar_t c : text) {
             if (FT_Load_Char(face, c, FT_LOAD_RENDER | FT_LOAD_FORCE_AUTOHINT)/*FT_Load_Char(face, c, FT_LOAD_RENDER)*/) {
                 continue;
             }
@@ -933,10 +935,10 @@ public:
     float gapSize; // Размер зазора между сетками
     
 
-    DoubleGridView(float cellWidth, float cellHeight,
+    DoubleGridView(SimpleText& _text, float cellWidth, float cellHeight,
         float gap = 0.05f,  // Добавляем параметр зазора
         float paddingX = 0.02f, float paddingY = 0.02f)
-        : leftGrid(7, 16, cellWidth, cellHeight, paddingX, paddingY),
+        :text(_text), leftGrid(7, 16, cellWidth, cellHeight, paddingX, paddingY),
         rightGrid(7, 16, cellWidth, cellHeight, paddingX, paddingY),
         gapSize(gap)
     {
@@ -998,9 +1000,9 @@ public:
             int i = 0;
             for (; i < 6; ++i) {
                 auto& view = grid.grid[15 - i][0];
-                view.textTexture = text.CreateTextTexture(std::to_string(i + 1));
+                view.textTexture = text.CreateTextTexture(std::to_wstring(i + 1));
             }
-            std::string arrSymb[10]= { "P", "D", "T", "F", "e", "S", "C", "A", "Sm","Pr"};
+            std::wstring arrSymb[10]= { L"P", L"D", L"T", L"F", L"e", L"S", L"C", L"A", L"Sm",L"Pr"};
             for (int j = 0; i < 16; ++i, ++j) {
                 auto& view = grid.grid[15 - i][0];
                 view.textTexture = text.CreateTextTexture(arrSymb[j]);
@@ -1008,7 +1010,7 @@ public:
         }
 
 
-        SimpleText text;
+        SimpleText &text;
     
 };
 
@@ -1226,4 +1228,67 @@ public:
 
 private:
     Text &txt;
+};
+
+struct ParamGrid
+{
+    int row, col;
+    float cellWidth, cellHeight;
+    float paddingX = 0.0f;
+    float paddingY = 0.02f;
+};
+
+
+class TableResult : public IObjectDraw
+{
+public:
+    TableResult(SimpleText& _text, ParamGrid &param)
+        : 
+        text(_text),grid(param.col, param.row, param.cellWidth, param.cellHeight, param.paddingX, param.paddingY)
+    {
+        text.SetTextParametr("fonts/arial.ttf", 48);
+    }
+
+    void SetProjection(glm::mat4& projection)
+    {
+        grid.projection = &projection;
+    }
+
+    void FillStaticText(const std::wstring &name1 = L"1", const std::wstring& name2 = L"2") {
+        auto& view = grid.grid[2][1];
+        view.textTexture = text.CreateTextTexture(L"СУММА");
+        auto& view2 = grid.grid[2][2];
+        view2.textTexture = text.CreateTextTexture(L"ШКОЛА");
+        auto& view3 = grid.grid[1][0];
+        view3.textTexture = text.CreateTextTexture(name1);
+        auto& view4 = grid.grid[0][0];
+        view4.textTexture = text.CreateTextTexture(name2);
+    }
+
+    void SetStartPos(float x, float y) 
+    {
+        for (auto& row : grid.grid) {
+            for (auto& cell : row) {
+                cell.posX += x;
+                cell.posY += y;
+            }
+        }
+    }
+
+    // Отрисовка обеих сеток
+    void Draw() {
+        grid.Draw();
+      //  txt.RenderText(L"name", 26.1f, 300.0f, 0.5f, glm::vec3(1.0f, 1.0f, 0.4f));
+    }
+
+    // Очистка ресурсов
+    void Delete() {
+        grid.Delete();
+    }
+
+private:
+
+    GridView grid;
+    SimpleText& text;
+ //   Text& txt;
 };

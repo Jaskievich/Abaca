@@ -93,7 +93,8 @@ int main() {
     // Создание графики игровой таблицы
     float cellWidth = 0.1f;
     float cellHeight = 0.1f;
-    DoubleGridView doubleGrid(cellWidth, cellHeight, 0.14f);
+    SimpleText stext;
+    DoubleGridView doubleGrid(stext, cellWidth, cellHeight, 0.14f);
 	doubleGrid.SetProjection(projection);
     doubleGrid.FillText();
 	ListObjrcts.push_back(&doubleGrid);
@@ -128,6 +129,21 @@ int main() {
     rm.Create(0.45, 0.09f, 0.37f, 1.82f);
     rm.projection = &projection;
     ListObjrcts.push_back(&rm);
+
+    ParamGrid par;
+    par.col = 3;
+    par.row = 3;
+    par.cellWidth = 0.11f;
+    par.cellHeight = 0.1f;
+    par.paddingX = 0.08f;
+    par.paddingY = 0.07f;
+   
+    TableResult res(stext, par);
+    res.SetProjection(projection);
+    res.SetStartPos(1.95f, 0.0f);
+    res.FillStaticText(player1.name, player2.name);
+    ListObjrcts.push_back(&res);
+
  
     while (!glfwWindowShouldClose(window)) {
 
