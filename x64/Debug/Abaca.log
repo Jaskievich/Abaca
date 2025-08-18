@@ -1,20 +1,32 @@
 ﻿  main.cpp
-C:\DocumentYVV\MyProject\Abaca\Abaca\Abaca\ViewGame.h(503,19): warning C4244: аргумент: преобразование "time_t" в "unsigned int", возможна потеря данных
+C:\DocumentYVV\MyProject\Abaca\Abaca\Abaca\modelgame.h(283,13): warning C4244: аргумент: преобразование "time_t" в "unsigned int", возможна потеря данных
   (компиляция исходного файла "main.cpp")
   
-C:\DocumentYVV\MyProject\Abaca\Abaca\Abaca\ViewGame.h(510,32): warning C4244: =: преобразование "double" в "float", возможна потеря данных
+C:\DocumentYVV\MyProject\Abaca\Abaca\Abaca\modelgame.h(286,13): warning C4244: аргумент: преобразование "time_t" в "unsigned int", возможна потеря данных
   (компиляция исходного файла "main.cpp")
   
-C:\DocumentYVV\MyProject\Abaca\Abaca\Abaca\ViewGame.h(516,27): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
+C:\DocumentYVV\MyProject\Abaca\Abaca\Abaca\modelgame.h(496,9): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
   (компиляция исходного файла "main.cpp")
   
-C:\DocumentYVV\MyProject\Abaca\Abaca\Abaca\ViewGame.h(531,22): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
+C:\DocumentYVV\MyProject\Abaca\Abaca\Abaca\modelgame.h(518,9): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
   (компиляция исходного файла "main.cpp")
   
-C:\DocumentYVV\MyProject\Abaca\Abaca\Abaca\ViewGame.h(846,39): warning C4267: +=: преобразование из "size_t" в "int"; возможна потеря данных
+C:\DocumentYVV\MyProject\Abaca\Abaca\Abaca\ViewGame.h(471,32): warning C4244: =: преобразование "double" в "float", возможна потеря данных
   (компиляция исходного файла "main.cpp")
   
-C:\DocumentYVV\MyProject\Abaca\Abaca\Abaca\ViewGame.h(947,46): warning C4305: инициализация: усечение из "double" в "float"
+C:\DocumentYVV\MyProject\Abaca\Abaca\Abaca\ViewGame.h(478,27): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
+  (компиляция исходного файла "main.cpp")
+  
+C:\DocumentYVV\MyProject\Abaca\Abaca\Abaca\ViewGame.h(492,22): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
+  (компиляция исходного файла "main.cpp")
+  
+C:\DocumentYVV\MyProject\Abaca\Abaca\Abaca\ViewGame.h(794,39): warning C4267: +=: преобразование из "size_t" в "int"; возможна потеря данных
+  (компиляция исходного файла "main.cpp")
+  
+C:\DocumentYVV\MyProject\Abaca\Abaca\Abaca\ViewGame.h(890,46): warning C4305: инициализация: усечение из "double" в "float"
+  (компиляция исходного файла "main.cpp")
+  
+C:\DocumentYVV\MyProject\Abaca\Abaca\Abaca\ViewGame.h(1256,15): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
   (компиляция исходного файла "main.cpp")
   
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\shared\minwindef.h(130,9): warning C4005: APIENTRY: изменение макроопределения
@@ -22,11 +34,11 @@ C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\shared\minwindef.h(1
       C:\DocumentYVV\MyProject\Abaca\Abaca\Abaca\glad.h(32,9):
       см. предыдущее определение "APIENTRY"
   
-C:\DocumentYVV\MyProject\Abaca\Abaca\Abaca\main.cpp(47,12): warning C4244: аргумент: преобразование "time_t" в "unsigned int", возможна потеря данных
-C:\DocumentYVV\MyProject\Abaca\Abaca\Abaca\main.cpp(58,21): warning C4244: инициализация: преобразование "double" в "int", возможна потеря данных
-C:\DocumentYVV\MyProject\Abaca\Abaca\Abaca\main.cpp(59,22): warning C4244: инициализация: преобразование "double" в "int", возможна потеря данных
-C:\DocumentYVV\MyProject\Abaca\Abaca\Abaca\main.cpp(107,22): warning C4305: аргумент: усечение из "double" в "float"
-C:\DocumentYVV\MyProject\Abaca\Abaca\Abaca\main.cpp(129,15): warning C4305: аргумент: усечение из "double" в "float"
+C:\DocumentYVV\MyProject\Abaca\Abaca\Abaca\main.cpp(61,24): warning C4305: аргумент: усечение из "double" в "float"
+C:\DocumentYVV\MyProject\Abaca\Abaca\Abaca\main.cpp(86,14): warning C4305: аргумент: усечение из "double" в "float"
+C:\DocumentYVV\MyProject\Abaca\Abaca\Abaca\main.cpp(122,38): warning C4305: =: усечение из "double" в "float"
+C:\DocumentYVV\MyProject\Abaca\Abaca\Abaca\main.cpp(187,18): warning C4244: инициализация: преобразование "double" в "int", возможна потеря данных
+C:\DocumentYVV\MyProject\Abaca\Abaca\Abaca\main.cpp(188,19): warning C4244: инициализация: преобразование "double" в "int", возможна потеря данных
   Abaca.vcxproj -> C:\DocumentYVV\MyProject\Abaca\Abaca\x64\Debug\Abaca.exe
   "pwsh.exe" не является внутренней или внешней
   командой, исполняемой программой или пакетным файлом.

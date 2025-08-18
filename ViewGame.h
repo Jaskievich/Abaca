@@ -7,7 +7,7 @@
 
 #include <iostream>
 #include <map>
-#include <string>
+
 
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -78,145 +78,161 @@ const char* ramcaVertexShaderSource = R"(
     }
 )";
 
-const char* ramcaFragmentShaderSource = R"(
-    #version 330 core
-    in vec2 TexCoord;
-    out vec4 FragColor;
-    uniform vec4 borderColor;
-    uniform vec4 backgroundColor;
-    uniform vec4 _textColor = vec4(0.0, 1.0, 0.0, 1.0);
-    uniform float borderWidth;
-    uniform bool hasText;
-    uniform sampler2D textTexture;
-   
-   uniform float padding = 0.1f;
-   uniform vec2 textureSize =  vec2(1.5, 1.8);
-    
-    void main() 
-   {
-
-        const float textBottomPaddingY = -0.8; // поравочные смещение по y
-        const float textBottomPaddingX = -0.2; // поравочные смещение по x
-
-        // Определяем границы рамки
-        bool isBorder = 
-            TexCoord.x < borderWidth || 
-            TexCoord.x > (1.0 - borderWidth) || 
-            TexCoord.y < borderWidth || 
-            TexCoord.y > (1.0 - borderWidth);
-        
-        if (isBorder) 
-        {
-            FragColor = borderColor;
-        } 
-        else 
-        {                
-                bool isPaddingArea = 
-                    TexCoord.x < (borderWidth + padding) ||
-                    TexCoord.x > (1.0 - borderWidth - padding) ||
-                    TexCoord.y < (borderWidth + padding) || 
-                    TexCoord.y > (1.0 - borderWidth - padding);
-        
-                // Масштабируем текстурные координаты для текста с учетом паддинга
-               vec2 textCoords = (TexCoord - vec2(borderWidth + padding, borderWidth + padding)) /
-                                    (1.0 - 2.0 * vec2(borderWidth + padding, borderWidth + padding))*textureSize; 
-            
-               textCoords.y += textBottomPaddingY;
-               textCoords.x += textBottomPaddingX;
-
-            // Корректируем вертикальное положение (центрируем)
-      
-      
-                if (!isPaddingArea && textCoords.x >= 0.0 && textCoords.x <= 1.0 && 
-                             textCoords.y >= 0.0 && textCoords.y <= 1.0)
-                {
-                    // Получаем альфа-значение (непрозрачность) из текстуры шрифта.
-                    // Обычно для монохромных шрифтов используется красный канал.
-                    float textAlpha = texture(textTexture, textCoords).r;
-
-                    // Смешиваем цвет фона с цветом текста, используя альфа-канал текста.
-                    // Формула: mix(фон, передний_план, альфа)
-                    FragColor = mix(backgroundColor, _textColor, textAlpha);
- 
-                } 
-                else 
-                {
-                    FragColor = backgroundColor;              
-                }
-        }
-    }
-)";
-
 //const char* ramcaFragmentShaderSource = R"(
-//   #version 330 core
-//in vec2 TexCoord;
-//in vec2 WorldPos;
-//out vec4 FragColor;
-//
-//// Параметры стиля
-//uniform vec4 borderColor;
-//uniform vec4 backgroundColor;
-//uniform vec4 textColor = vec4(0.0, 1.0, 0.0, 1.0);
-//uniform float borderWidth = 0.05;
-//uniform float padding = 0.2;
-//
-//// Параметры текста
-//uniform sampler2D textTexture;
-//uniform vec2 textureSize = vec2(1.0);
-//uniform vec2 textOffset = vec2(-0.1, -0.3); // Смещение текста
-//uniform float textScale = 1.0; // Масштаб текста
-//uniform float textVerticalOffset = 1.0;
-////uniform float textDescent = 0.0;
-//
-//// Параметры SDF-рендеринга (опционально)
-//uniform bool useSDF = false;
-//uniform float sdfEdge = 0.5;
-//uniform float sdfOutline = 0.1;
-//
-//void main() {
-//    // 1. Рассчитываем расстояния до границ
-//    vec2 borderDist = min(TexCoord, 1.0 - TexCoord);
-//    float borderFactor = smoothstep(0.0, borderWidth, min(borderDist.x, borderDist.y));
+//    #version 330 core
+//    in vec2 TexCoord;
+//    out vec4 FragColor;
+//    uniform vec4 borderColor;
+//    uniform vec4 backgroundColor;
+//    uniform vec4 _textColor = vec4(0.0, 1.0, 0.0, 1.0);
+//    uniform float borderWidth;
+//    uniform bool hasText;
+//    uniform sampler2D textTexture;
+//   
+//   uniform float padding = 0.1f;
+//   uniform vec2 textureSize =  vec2(1.5, 1.8);
 //    
-//    // 2. Рассчитываем расстояния до внутренней границы
-//    vec2 paddingBorder = vec2(borderWidth + padding);
-//    vec2 innerDist = min(TexCoord - borderWidth, 1.0 - borderWidth - TexCoord);
-//    float paddingFactor = smoothstep(0.0, padding, min(innerDist.x, innerDist.y));
+//    void main() 
+//   {
 //
-//    // 3. Определяем цвет рамки и фона
-//    vec4 color = mix(borderColor, backgroundColor, borderFactor);
-//    
-//    // 4. Обработка текста (только в центральной области)
-//    if (paddingFactor > 0.0) {
-//        // Масштабированные координаты текста
-//        vec2 textCoords = (TexCoord - paddingBorder) / 
-//                         (1.0 - 2.0 * paddingBorder);
-//        // Учет смещения и масштаба
-//        textCoords = (textCoords - 0.5) * textScale + 0.5 + textOffset;
+//        const float textBottomPaddingY = -0.8; // поравочные смещение по y
+//        const float textBottomPaddingX = -0.45; // поравочные смещение по x
 //
-//        textCoords.y = (textCoords.y - 0.5) * (1.0 + textVerticalOffset) + 0.5;
-//        textCoords *= textureSize;
+//        // Определяем границы рамки
+//        bool isBorder = 
+//            TexCoord.x < borderWidth || 
+//            TexCoord.x > (1.0 - borderWidth) || 
+//            TexCoord.y < borderWidth || 
+//            TexCoord.y > (1.0 - borderWidth);
 //        
-//        if (all(greaterThanEqual(textCoords, vec2(0))) && 
-//            all(lessThanEqual(textCoords, vec2(1)))) {
+//        if (isBorder) 
+//        {
+//            FragColor = borderColor;
+//        } 
+//        else 
+//        {                
+//                bool isPaddingArea = 
+//                    TexCoord.x < (borderWidth + padding) ||
+//                    TexCoord.x > (1.0 - borderWidth - padding) ||
+//                    TexCoord.y < (borderWidth + padding) || 
+//                    TexCoord.y > (1.0 - borderWidth - padding);
+//        
+//                // Масштабируем текстурные координаты для текста с учетом паддинга
+//               vec2 textCoords = (TexCoord - vec2(borderWidth + padding, borderWidth + padding)) /
+//                                    (1.0 - 2.0 * vec2(borderWidth + padding, borderWidth + padding))*textureSize; 
 //            
-//            if (useSDF) {
-//                // SDF-рендеринг для четкого текста
-//                float sdfValue = texture(textTexture, textCoords).r;
-//                float alpha = smoothstep(sdfEdge - sdfOutline, sdfEdge + sdfOutline, sdfValue);
-//                color = mix(color, textColor, alpha);
-//            } else {
-//                // Обычный рендеринг текста
-//                float textAlpha = texture(textTexture, textCoords).r;
-//                color = mix(color, textColor, textAlpha);
-//            }
+//               textCoords.y += textBottomPaddingY;
+//               textCoords.x += textBottomPaddingX;
+//
+//            // Корректируем вертикальное положение (центрируем)
+//      
+//      
+//                if (!isPaddingArea && textCoords.x >= 0.0 && textCoords.x <= 1.0 && 
+//                             textCoords.y >= 0.0 && textCoords.y <= 1.0)
+//                {
+//                    // Получаем альфа-значение (непрозрачность) из текстуры шрифта.
+//                    // Обычно для монохромных шрифтов используется красный канал.
+//                    float textAlpha = texture(textTexture, textCoords).r;
+//
+//                    // Смешиваем цвет фона с цветом текста, используя альфа-канал текста.
+//                    // Формула: mix(фон, передний_план, альфа)
+//                    FragColor = mix(backgroundColor, _textColor, textAlpha);
+// 
+//                } 
+//                else 
+//                {
+//                    FragColor = backgroundColor;              
+//                }
 //        }
 //    }
-//
-//    FragColor = color;
-//}
 //)";
-//
+
+const char* ramcaFragmentShaderSource = R"(
+   #version 330 core
+in vec2 TexCoord;
+out vec4 FragColor;
+uniform vec4 borderColor;
+uniform vec4 backgroundColor;
+uniform vec4 _textColor = vec4(0.0, 1.0, 0.0, 1.0);
+uniform float borderWidth;
+uniform bool hasText;
+uniform sampler2D textTexture;
+
+uniform float padding = 0.1f;
+uniform vec2 textureSize = vec2(1.5, 1.8);
+
+// Параметры для линий
+uniform bool drawDiagonals = false;       // Включить/выключить линии
+uniform vec4 lineColor = vec4(1.0, 1.0, 0.0, 1.0); // Цвет линий (желтый по умолчанию)
+uniform float lineWidth = 0.01f;          // Ширина линий
+uniform float aspectRatio = 1.0f; // width/height
+
+void main()
+{
+    const float textBottomPaddingY = -0.8; // поравочные смещение по y
+    const float textBottomPaddingX = -0.45; // поравочные смещение по x
+
+    // Определяем границы рамки
+    // Определяем границы рамки
+    bool isBorder = 
+        TexCoord.x < borderWidth || 
+        TexCoord.x > (1.0 - borderWidth) || 
+        TexCoord.y < borderWidth || 
+        TexCoord.y > (1.0 - borderWidth);
+    
+    if (isBorder) 
+    {
+        FragColor = borderColor;
+        return;
+    }
+    
+    // Координаты внутри рамки (без учета borderWidth)
+      vec2 innerCoord = TexCoord ;
+
+    // Проверяем диагонали только если они включены
+    if (drawDiagonals) 
+    {
+        // Нормализованные координаты с учетом пропорций
+        vec2 normCoord = vec2(innerCoord.x, innerCoord.y );         
+        // Главная диагональ (0,0) to (1,1) в нормализованных координатах
+        float mainDiag = abs(normCoord.x*0.8f + 0.16f - normCoord.y);      
+        // Побочная диагональ (1,0) to (0,1) в нормализованных координатах
+        float antiDiag = abs(normCoord.x*0.75f + normCoord.y*0.85f - 1.0);
+       
+        if (mainDiag < lineWidth || antiDiag < lineWidth) 
+        {
+            FragColor = lineColor;
+            return;
+        }
+    }
+    
+    // Обработка текста и фона
+    bool isPaddingArea = 
+        innerCoord.x < padding ||
+        innerCoord.x > (1.0 - padding) ||
+        innerCoord.y < padding || 
+        innerCoord.y > (1.0 - padding);
+    
+    if (!isPaddingArea && hasText) 
+    {
+        vec2 textCoords = (innerCoord - padding) / (1.0 - 2.0 * padding) * textureSize;
+        textCoords.y += textBottomPaddingY; // textBottomPaddingY
+        textCoords.x += textBottomPaddingX; // textBottomPaddingX
+        
+        if (textCoords.x >= 0.0 && textCoords.x <= 1.0 && 
+            textCoords.y >= 0.0 && textCoords.y <= 1.0) 
+        {
+            float textAlpha = texture(textTexture, textCoords).r;
+            FragColor = mix(backgroundColor, _textColor, textAlpha);
+            return;
+        }
+    }
+    
+    FragColor = backgroundColor;
+}
+)";
+
+
 
 const char* _vertexShaderSource = R"glsl(
 #version 330 core
@@ -314,50 +330,6 @@ public:
     // Содержит ID объекта текстуры, используемый для всех операций с конкретной текстурой
     GLuint ID;
 
-    //// Размеры текстурного изображения
-    //unsigned int Width, Height; // ширина и высота (в пикселях) загруженного изображения
-
-    //// Формат текстуры
-    //unsigned int Internal_Format; // внутренний формат текстуры
-    //unsigned int Image_Format; // формат загружаемого изображения
-
-    //// Конфигурация текстуры
-    //unsigned int Wrap_S; // режим наложения по оси S
-    //unsigned int Wrap_T; // режим наложения по оси T
-    //unsigned int Filter_Min; // режим фильтрации, если пикселей текстуры < пикселей экрана
-    //unsigned int Filter_Max; // режим фильтрации, если пикселей текстуры > пикселей экрана
-
-    //Texture2D(): Width(0), Height(0), Internal_Format(GL_RGB), Image_Format(GL_RGB), Wrap_S(GL_REPEAT), Wrap_T(GL_REPEAT), Filter_Min(GL_LINEAR), Filter_Max(GL_LINEAR)
-    //{
-    //    glGenTextures(1, &this->ID);
-    //}
-
-    //// Генерируем текстуру из изображения
-    //void Generate(unsigned int width, unsigned int height, unsigned char* data)
-    //{
-    //    this->Width = width;
-    //    this->Height = height;
-
-    //    // Создаем текстуру
-    //    glBindTexture(GL_TEXTURE_2D, this->ID);
-    //    glTexImage2D(GL_TEXTURE_2D, 0, this->Internal_Format, width, height, 0, this->Image_Format, GL_UNSIGNED_BYTE, data);
-
-    //    // Задаем для текстуры режимы наложения и фильтрации
-    //    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, this->Wrap_S);
-    //    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, this->Wrap_T);
-    //    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, this->Filter_Min);
-    //    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, this->Filter_Max);
-
-    //    // Отвязываем текстуру
-    //    glBindTexture(GL_TEXTURE_2D, 0);
-    //}
-
-    //// Связываем текстуру в виде текущего активного GL_TEXTURE_2D текстурного объекта
-    //void Bind() const
-    //{
-    //    glBindTexture(GL_TEXTURE_2D, this->ID);
-    //}
-
     GLuint loadTexture(const char* path) 
     {
     
@@ -384,17 +356,14 @@ public:
     }
 };
 
-
-
-
-
 class CubeView
 {
 public:
 
     GLuint shaderProgram;
 
-    CubeView() {
+    CubeView():VAO(0), VBO(0),EBO(0)
+    {
         shader.Compile(vertexShaderSource, fragmentShaderSource);
         shaderProgram = shader.ID;
     }
@@ -416,7 +385,7 @@ public:
         setupBuffers();
     }
 
-    void setupBuffers() {
+    void setupBuffers() const {
         
         const float baseSize = 0.2f; // Базовый размер (будет масштабироваться)
 
@@ -450,7 +419,7 @@ public:
     }
 
 
-    void drawDice(GLuint textureID, float xOffset, float yOffset, bool highlight = false)
+    void drawDice(GLuint textureID, float xOffset, float yOffset, bool highlight = false) const
     {     
      //   glUseProgram(shaderProgram);
         glUniform1f(glGetUniformLocation(shaderProgram, "xOffset"), xOffset);
@@ -484,23 +453,15 @@ public:
     virtual ~IObjectDraw(){}
 };
 
-const int N_COUNT_DICE = 5;
 
 class ArrayCubeView: public IObjectDraw
 {
     
 public:
 
-    std::vector<int> diceValues;
-    std::vector<int> stateUp;
-    int highlightedDice;
-
-    ArrayCubeView():highlightedDice(0)
+    ArrayCubeView(ArrayCube& _arrayCube): arrayCube(_arrayCube)
     {
-        diceValues.resize(N_COUNT_DICE, 1);
-        stateUp.resize(N_COUNT_DICE, 0);
         cubeView.Create();
-        srand(time(0));
     }
 
     void Create() 
@@ -512,6 +473,7 @@ public:
 
     void Draw()
     {
+
         GLuint shaderProgram = cubeView.shaderProgram;
         float currentTime = glfwGetTime() - startTime;
   
@@ -527,11 +489,13 @@ public:
         float diceWidth = 0.4f * scale; // ширина одной кости (0.4 влево + 0.4 вправо)
         float gap = 0.005f; // промежуток между костями
         float totalWidth = 6 * diceWidth + 5 * gap; // общая ширина
-        //  float startX = -totalWidth / 2.0f + diceWidth / 2.0f; // начальное смещение
         float startX = 1.0f - totalWidth + 0.05;
         float yOffset = 0.4f;
         float UpYOffset = 0.2f;
 
+        std::vector<int>& diceValues = arrayCube.diceValues;
+        std::vector<int>& stateUp = arrayCube.stateUp;
+        int& highlightedDice = arrayCube.highlightedDice;
         // Рисуем 6 костей с правильными смещениями
         for (int i = 0; i < diceValues.size(); ++i) {
             float xOffset = startX + i * (diceWidth + gap);
@@ -543,32 +507,7 @@ public:
   
     }
 
-    void SetDiceRandom() 
-    {
-        for (int i = 0; i < N_COUNT_DICE; ++i) {
-            if (stateUp[i] == 0)
-                diceValues[i] = rollDice();
-        }
-    }
-
-    int NextSelect() {
-        highlightedDice = (highlightedDice + 1) % N_COUNT_DICE;
-        return highlightedDice;
-    }
-
-    int PrevSelect() {
-        highlightedDice = (highlightedDice - 1 + N_COUNT_DICE) % N_COUNT_DICE;
-        return highlightedDice;
-    }
-
-    void SetUp() {
-        stateUp[highlightedDice] = 1;
-    }
-
-    void SetDown() {
-        stateUp[highlightedDice] = 0;
-    }
-
+   
     void Delete() {
         cubeView.Delete();
     }
@@ -576,11 +515,6 @@ public:
 
 private :
 
-
-
-    int rollDice() {
-        return rand() % 6 + 1;
-    }
 
     void loadDiceTextures() {
         const std::vector<std::string> paths = {
@@ -607,6 +541,8 @@ private :
     Texture2D texture2D;
 
     std::vector<GLuint> diceTextures;
+
+    ArrayCube   &arrayCube;
    
 };
 
@@ -617,7 +553,7 @@ public:
     GLuint shaderProgram;
     glm::mat4 *projection = nullptr;
 
-    RamcaView():borderWidth(0.05f){
+    RamcaView():borderWidth(0.04f){
 
         shader.Compile(ramcaVertexShaderSource, ramcaFragmentShaderSource);
         shaderProgram = shader.ID;
@@ -626,6 +562,25 @@ public:
     ~RamcaView()
     {
         Delete();
+    }
+
+    void EnableDiagonals(bool enable) {
+        glUseProgram(shaderProgram);
+        glUniform1i(glGetUniformLocation(shaderProgram, "drawDiagonals"), enable ? 1 : 0);
+    //    glUniform1f(glGetUniformLocation(shaderProgram, "aspectRatio"), width / height);
+        glUseProgram(0);
+    }
+
+    void SetDiagonalColor(float r, float g, float b, float a = 1.0f) {
+        glUseProgram(shaderProgram);
+        glUniform4f(glGetUniformLocation(shaderProgram, "lineColor"), r, g, b, a);
+        glUseProgram(0);
+    }
+
+    void SetDiagonalWidth(float width) {
+        glUseProgram(shaderProgram);
+        glUniform1f(glGetUniformLocation(shaderProgram, "lineWidth"), width);
+        glUseProgram(0);
     }
 
     void Delete() {
@@ -652,13 +607,7 @@ public:
       
     }
 
-    void DeleteView() {
-        glDeleteVertexArrays(1, &VAO);
-        glDeleteBuffers(1, &VBO);
-        glDeleteBuffers(1, &EBO);
-        glDeleteProgram(shaderProgram);
-    }
-
+  
     void Draw() {
         if (projection == nullptr) return;
         // Сохраняем текущие состояния
@@ -826,7 +775,6 @@ public:
 
     GLuint CreateTextTexture(const std::wstring& text) {
 
-
         // 1. Рассчитываем размеры текстуры
         int textureWidth = 0;
         int textureHeight = 0;
@@ -846,9 +794,7 @@ public:
         textureWidth += text.length() * 2;
       //  textureHeight += 30;
 
-       
-
-        // 2. Создаём временный буфер для текстуры
+         // 2. Создаём временный буфер для текстуры
         std::vector<unsigned char> textureData(textureWidth * textureHeight, 0);
 
         // 3. Рендерим каждый символ в буфер
@@ -897,7 +843,6 @@ public:
         // Очищаем ресурсы FreeType
      /*   FT_Done_Face(face);
         face = nullptr;*/
-
         return textureID;
     }
 
@@ -909,11 +854,8 @@ public:
             FT_Done_FreeType(ft);
             return 0;
         }
-
         // Установка размера шрифта
      //   FT_Set_Pixel_Sizes(face, 0, fontSize);
-
-
           // Установка размера в пунктах (1/72 дюйма)
         FT_Set_Char_Size(face, 0, fontSize * 64, 96, 96); // 96 DPI
 
@@ -933,11 +875,12 @@ public:
     GridView leftGrid;
     GridView rightGrid;
     float gapSize; // Размер зазора между сетками
-    
+    BoardGame* boardGameLeft = nullptr;
+    BoardGame* boardGameRight = nullptr;
 
     DoubleGridView(SimpleText& _text, float cellWidth, float cellHeight,
-        float gap = 0.05f,  // Добавляем параметр зазора
-        float paddingX = 0.02f, float paddingY = 0.02f)
+        float gap = 0.01f,  // Добавляем параметр зазора
+        float paddingX = 0.05f, float paddingY = 0.02f)
         :text(_text), leftGrid(7, 16, cellWidth, cellHeight, paddingX, paddingY),
         rightGrid(7, 16, cellWidth, cellHeight, paddingX, paddingY),
         gapSize(gap)
@@ -976,10 +919,15 @@ public:
       
     }
 
+    void FillBoardText() {
+        if (boardGameLeft != nullptr) FillBoard(leftGrid, *boardGameLeft);
+        if (boardGameRight != nullptr) FillBoard(rightGrid, *boardGameRight);
+    }
+
 
     // Отрисовка обеих сеток
     void Draw() {
-
+      
         leftGrid.Draw();
         rightGrid.Draw();
       
@@ -1009,6 +957,24 @@ public:
             }
         }
 
+        void FillBoard(GridView& grid, BoardGame& board)
+        {
+          
+            for (int i = 0; i < BoardGame::N_ROW; ++i) {
+                for (int j = 0; j < BoardGame::N_COLUMN; ++j) {
+                    if (board.arr[i][j] == 0) continue;
+                    auto& view = grid.grid[15 - i][j+1];
+                    if (board.arr[i][j] != INT_MAX) {
+                        view.textTexture = text.CreateTextTexture(std::to_wstring(board.arr[i][j]));
+                    }
+                    else {
+                        view.EnableDiagonals(true); // Включить линии
+                        view.SetDiagonalColor(1.0f, 0.0f, 0.0f, 1.0f); // Красные линии
+                        view.SetDiagonalWidth(0.02f); // Более тонкие линии
+                    }
+                }
+            }
+        }
 
         SimpleText &text;
     
@@ -1211,13 +1177,12 @@ class PlayerName : public IObjectDraw
 {
 public:
     std::wstring name;
-    bool isActive ;
     float x;
     float y;
     float scale;
 
     PlayerName(Text& _txt) 
-        : txt(_txt),x(25.0f), y(HEIGHT - 50.0f), scale(0.5f), isActive(false)
+        : txt(_txt),x(25.0f), y(HEIGHT - 50.0f), scale(0.5f)
     {
     }
  
@@ -1228,6 +1193,28 @@ public:
 
 private:
     Text &txt;
+};
+
+class CurrentStepNumber : public IObjectDraw
+{
+public:
+    Game& game;
+    float x;
+    float y;
+    float scale;
+
+    CurrentStepNumber(Text& _txt, Game &_game)
+        : txt(_txt),game(_game), x(25.0f), y(HEIGHT - 50.0f), scale(0.5f)
+    {
+    }
+
+    void Draw()
+    {
+        txt.RenderText(std::to_wstring(game.currStep), x, y, scale, glm::vec3(1.0f, 1.0f, 0.4f));
+    }
+
+private:
+    Text& txt;
 };
 
 struct ParamGrid
@@ -1242,9 +1229,8 @@ struct ParamGrid
 class TableResult : public IObjectDraw
 {
 public:
-    TableResult(SimpleText& _text, ParamGrid &param)
-        : 
-        text(_text),grid(param.col, param.row, param.cellWidth, param.cellHeight, param.paddingX, param.paddingY)
+    TableResult(SimpleText& _text, ParamGrid &param, Game &_game)
+        : text(_text),grid(param.col, param.row, param.cellWidth, param.cellHeight, param.paddingX, param.paddingY), game(_game)
     {
         text.SetTextParametr("fonts/arial.ttf", 48);
     }
@@ -1265,6 +1251,18 @@ public:
         view4.textTexture = text.CreateTextTexture(name2);
     }
 
+    void FillCeillText() {
+        std::vector<Payer>& vPaers = game.vPaers;
+        int n = vPaers.size();
+        for (int i = 0; i < n; ++i) {
+            auto& view = grid.grid[n - 1 - i][1];
+            view.textTexture = text.CreateTextTexture(std::to_wstring(vPaers[i].boardGame.sumTotal));
+            auto& view2 = grid.grid[n - 1 - i][2];
+            view2.textTexture = text.CreateTextTexture(std::to_wstring(vPaers[i].boardGame.sumScool));
+        }
+
+    }
+
     void SetStartPos(float x, float y) 
     {
         for (auto& row : grid.grid) {
@@ -1277,8 +1275,8 @@ public:
 
     // Отрисовка обеих сеток
     void Draw() {
+       // FillCeillText();
         grid.Draw();
-      //  txt.RenderText(L"name", 26.1f, 300.0f, 0.5f, glm::vec3(1.0f, 1.0f, 0.4f));
     }
 
     // Очистка ресурсов
@@ -1290,5 +1288,5 @@ private:
 
     GridView grid;
     SimpleText& text;
- //   Text& txt;
+    Game& game;
 };

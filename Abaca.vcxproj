@@ -106,9 +106,10 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\DocumentYVV\MyProject\Abaca\Abaca\packages\freetype.2.8.0.1\build\native\include;C:\DocumentYVV\MyProject\Abaca\Abaca\Abaca\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -141,6 +142,7 @@
     <ClInclude Include="glad.h" />
     <ClInclude Include="glm\gtc\matrix_transform.hpp" />
     <ClInclude Include="khrplatform.h" />
+    <ClInclude Include="modelgame.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="ViewGame.h" />
   </ItemGroup>
