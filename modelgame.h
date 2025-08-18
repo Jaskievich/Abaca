@@ -3,7 +3,6 @@
 #include <string>
 #include <ctime>
 #include <climits>
-
 #include <vector>
 #include <algorithm> // для std::sort
 #include <functional> // для std::greater
@@ -172,15 +171,6 @@ struct BoardGame: public IBoardGameObserver
 		return true;
 	}
 
-	/*bool IsRowPrize(int row) {
-		return arr[row][N_COLUMN - 1] != 0 && arr[row][N_COLUMN - 2] != 0;
-	}*/
-
-	bool IsColumnPrize(int col) {
-		for( int i = 0; i < N_ROW ; ++i)
-			if (arr[i][col] == 0) return false;
-		return true;
-	}
 	void SetColumnPrize(int col, int val) {
 		arr[N_ROW - 1][col] = val;
 	}

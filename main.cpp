@@ -1,22 +1,11 @@
 
-
 #include "glad.h"
-
 #include <GLFW/glfw3.h>
-
 #include "modelgame.h"
 #include "ViewGame.h"
-//#define STB_IMAGE_IMPLEMENTATION
-//
-//#include "stb_image.h"
 #include <cstdlib>
-
 #include <Windows.h>
-
-
-
 #include <iostream>
-
 #include <string>
 #include <unordered_map>
 #include <functional>
@@ -32,10 +21,7 @@ class CtrlGameObjectView
 {
 public:
 
-	~CtrlGameObjectView() {
-		DeleteObjects();
-	}
-
+	
 	void CreateObjects(Game& game, ArrayCube& arrayCubes)
 	{
 		// Создание кубиков
@@ -123,12 +109,6 @@ public:
 		else rm->posX = 0.37f;
 	}
 
-	void DeleteObjects()
-	{
-		/*for (auto* item : ListObjrcts) {
-			item->Draw();
-		}*/
-	}
 
 private:
 
