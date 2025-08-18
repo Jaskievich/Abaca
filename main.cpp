@@ -149,7 +149,9 @@ int main() {
 		return -1;
 	}
 
-	setlocale(LC_ALL, "rus");
+//	setlocale(LC_ALL, "rus");
+
+	system("chcp 1251");
 	
 	// Создаем модели игры
 	std::vector<std::wstring> names = { L"Player1", L"Player2" };
