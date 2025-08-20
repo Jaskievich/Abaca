@@ -6,7 +6,7 @@
 #include <vector>
 #include <algorithm> // для std::sort
 #include <functional> // для std::greater
-
+#include "MyUtility.h"
 
 enum class Combination
 {
@@ -215,6 +215,10 @@ public:
 		return boardGame.IsFillBoard();
 	}
 
+	std::string GetNameToString() {
+		return MyUtility::wstringToString(name);
+	}
+
 };
 
 class Game
@@ -223,6 +227,8 @@ public :
 	std::vector<Payer> vPaers;
 	static const int N_STEP = 3;
 	int currStep = 0;
+	std::string messageResult = "";
+
 	Game(int nPlaers, std::vector<std::wstring> names) {
 		for (auto &item : names) {
 			vPaers.emplace_back(Payer(item));
@@ -251,11 +257,23 @@ public :
 	bool IsGameOver() {
 		for (auto& item : vPaers) {
 			if (!item.IsAllFillField()) return false;
-		}
+		}		
+		FormResultGame();
 		return true;
 	}
 
 private:	
+
+	void FormResultGame()
+	{
+		int i_max = 0;
+		for (int i = 0; i < vPaers.size(); ++i) {
+			if (vPaers[i].boardGame.sumTotal > vPaers[i_max].boardGame.sumTotal) i_max = i;
+		}
+		messageResult = u8"Выиграл " + vPaers[i_max].GetNameToString();
+		messageResult.append(u8" со счетом " + std::to_string(vPaers[i_max].boardGame.sumTotal));
+	}
+
 	int index = 0;
 };
 

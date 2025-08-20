@@ -352,10 +352,11 @@ public:
 
     void drawDice(GLuint textureID, float xOffset, float yOffset, bool highlight = false) const
     {     
-     //   glUseProgram(shaderProgram);
+        glUseProgram(shaderProgram);
         glUniform1f(glGetUniformLocation(shaderProgram, "xOffset"), xOffset);
         glUniform1f(glGetUniformLocation(shaderProgram, "yOffset"), yOffset);
         glUniform1i(glGetUniformLocation(shaderProgram, "highlight"), highlight);
+        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureID);
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);

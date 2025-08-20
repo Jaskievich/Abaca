@@ -4,8 +4,13 @@
 #include "modelgame.h"
 #include "ViewGame.h"
 #include <cstdlib>
-#include <Windows.h>
+//#include <Windows.h>
+#include "GuiDialog.h"
+
 #include <iostream>
+#include <thread>
+#include <chrono>
+
 #include <string>
 #include <unordered_map>
 #include <functional>
@@ -16,6 +21,31 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
+
+// Функция инициализации ImGui
+void initImGui(GLFWwindow* window) {
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	// Загрузка шрифта с кириллицей
+	ImFont* font = io.Fonts->AddFontFromFileTTF(
+		"fonts/arial.ttf",
+		18.0f,
+		nullptr,
+		io.Fonts->GetGlyphRangesCyrillic()
+	);
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init("#version 130");
+	ImGui::StyleColorsDark();
+}
+
+// Функция очистки
+void cleanup() {
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+}
+
 
 class CtrlGameObjectView
 {
@@ -121,6 +151,8 @@ private:
 	glm::mat4 projection;
 };
 
+// Инициализация статической переменной
+MessageBox::MessageBoxData MessageBox::s_data;
 
 int main() {
 
@@ -129,34 +161,9 @@ int main() {
 		return -1;
 	}
 
-//	setlocale(LC_ALL, "rus");
-
 	system("chcp 1251");
 	
-	// Создаем модели игры
-	std::vector<std::wstring> names = { L"Player1", L"Player2" };
-	Game game(2, names);
-	ArrayCube arrayCubes;
-
-	std::unordered_map<int, std::shared_ptr<ScoreCalculator>> calculators = {
-		{GLFW_KEY_1 , std::make_shared<ScoolCalculator>()},
-		{GLFW_KEY_2 , std::make_shared<ScoolCalculator>()},
-		{GLFW_KEY_3 , std::make_shared<ScoolCalculator>()},
-		{GLFW_KEY_4 , std::make_shared<ScoolCalculator>()},
-		{GLFW_KEY_5 , std::make_shared<ScoolCalculator>()},
-		{GLFW_KEY_6 , std::make_shared<ScoolCalculator>()},
-		{GLFW_KEY_P , std::make_shared<PairCalculator>()},
-		{GLFW_KEY_D , std::make_shared<TwoPairCalculator>()},
-		{GLFW_KEY_T , std::make_shared<ThreeOfAKindCalculator>()},
-		{GLFW_KEY_F , std::make_shared<FullHouseCalculator>()},
-		{GLFW_KEY_E , std::make_shared<StreetSmallCalculator>()},
-		{GLFW_KEY_S , std::make_shared<StreetBigCalculator>()},
-		{GLFW_KEY_C , std::make_shared<FourOfAKindCalculator>()},
-		{GLFW_KEY_A , std::make_shared<FiveOfAKindCalculator>()},
-		{GLFW_KEY_ENTER, std::make_shared<SumKindCalculator>()}
-	};
-
-
+	
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -177,6 +184,8 @@ int main() {
 
 	glfwMakeContextCurrent(window);
 
+	
+
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 		std::cerr << "Failed to initialize GLAD" << std::endl;
 		return -1;
@@ -185,24 +194,66 @@ int main() {
 
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+	initImGui(window);
+
+	DialogInput dialogInput;
+	dialogInput.loadFontsSimple();
+	
+	std::wstring name1, name2;
+	bool dialogResult = dialogInput.showModalDialog(window);
+	if (dialogResult) {
+		name1 = dialogInput.dialogState.getInput1AsWString();
+		name2 = dialogInput.dialogState.getInput2AsWString();
+	}
+	else {
+		// Обработка Cancel
+		cleanup();
+		glfwTerminate();
+		return 0;
+	}
+
+	cleanup();
+	// Создаем модели игры
+	std::vector<std::wstring> names = { name1 , name2};
+	Game game(2, names);
+	ArrayCube arrayCubes;
+	std::unordered_map<int, std::shared_ptr<ScoreCalculator>> calculators = {
+		{GLFW_KEY_1 , std::make_shared<ScoolCalculator>()},
+		{GLFW_KEY_2 , std::make_shared<ScoolCalculator>()},
+		{GLFW_KEY_3 , std::make_shared<ScoolCalculator>()},
+		{GLFW_KEY_4 , std::make_shared<ScoolCalculator>()},
+		{GLFW_KEY_5 , std::make_shared<ScoolCalculator>()},
+		{GLFW_KEY_6 , std::make_shared<ScoolCalculator>()},
+		{GLFW_KEY_P , std::make_shared<PairCalculator>()},
+		{GLFW_KEY_D , std::make_shared<TwoPairCalculator>()},
+		{GLFW_KEY_T , std::make_shared<ThreeOfAKindCalculator>()},
+		{GLFW_KEY_F , std::make_shared<FullHouseCalculator>()},
+		{GLFW_KEY_E , std::make_shared<StreetSmallCalculator>()},
+		{GLFW_KEY_S , std::make_shared<StreetBigCalculator>()},
+		{GLFW_KEY_C , std::make_shared<FourOfAKindCalculator>()},
+		{GLFW_KEY_A , std::make_shared<FiveOfAKindCalculator>()},
+		{GLFW_KEY_ENTER, std::make_shared<SumKindCalculator>()}
+	};
 
 	CtrlGameObjectView ctrlGameObjectView;
 	ctrlGameObjectView.CreateObjects(game, arrayCubes);
 
 	
-	bool isGameContinue = true;
+	bool isGameStop = false;
 
+	initImGui(window);
 
-	while (!glfwWindowShouldClose(window) && isGameContinue ) {
+	while (!glfwWindowShouldClose(window)  ) {
 
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_DEPTH_TEST);
 
+	
 		// бросок костей
 		if (game.currStep < Game::N_STEP) {
 			if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-				Sleep(200);
+				std::this_thread::sleep_for(std::chrono::milliseconds(200));
 				arrayCubes.SetDiceRandom();
 				game.currStep++;
 			}
@@ -210,19 +261,19 @@ int main() {
 
 		// Выбор кубиков
 		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-			Sleep(200);
+			std::this_thread::sleep_for(std::chrono::milliseconds(200));
 			arrayCubes.NextSelect();
 		}
 		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-			Sleep(200);
+			std::this_thread::sleep_for(std::chrono::milliseconds(200));
 			arrayCubes.PrevSelect();
 		}
 		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-			Sleep(200);
+			std::this_thread::sleep_for(std::chrono::milliseconds(200));
 			arrayCubes.SetUp();
 		}
 		if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-			Sleep(200);
+			std::this_thread::sleep_for(std::chrono::milliseconds(200));
 			arrayCubes.SetDown();
 		}
 
@@ -238,26 +289,28 @@ int main() {
 					// Проверить закончена ли игра и передать ход следующему игроку
 					ctrlGameObjectView.FillDrawObject();
 					if (game.IsGameOver()) {
-						// Вывести сообщение о победителе и выйти из цикла игры 
-						isGameContinue = false;
+						//// Вывести сообщение о победителе и выйти из цикла игры 
+						MessageBox::ShowInfo(u8"Игра завершена", game.messageResult);
+						isGameStop = true;
 					}
 					else game.NextPayer();
 					arrayCubes.Reset();
 				}
-				Sleep(200);
+				std::this_thread::sleep_for(std::chrono::milliseconds(200));
 				break;
 			}
 		}
 
 		// Вывод объектов
 		ctrlGameObjectView.DrawObjects();
+		if( !MessageBox::Render() && isGameStop) break;
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+		std::this_thread::sleep_for(std::chrono::milliseconds(16));
 	}
 
-	//DeleteObjects(ListObjrcts);
-
+	cleanup();
 	glfwTerminate();
 	return 0;
 }
