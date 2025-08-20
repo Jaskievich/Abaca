@@ -10,6 +10,33 @@
 #include <chrono>
 
 
+struct ImgGuiUtility
+{
+    // Функция инициализации ImGui
+    static void initImGui(GLFWwindow* window) {
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
+        // Загрузка шрифта с кириллицей
+        ImFont* font = io.Fonts->AddFontFromFileTTF(
+            "fonts/arial.ttf",
+            18.0f,
+            nullptr,
+            io.Fonts->GetGlyphRangesCyrillic()
+        );
+        ImGui_ImplGlfw_InitForOpenGL(window, true);
+        ImGui_ImplOpenGL3_Init("#version 130");
+        ImGui::StyleColorsDark();
+    }
+
+    // Функция очистки
+    static void cleanup() {
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
+    }
+};
+
 
 // Состояние диалогового окна
 struct DialogState {

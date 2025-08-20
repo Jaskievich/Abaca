@@ -22,36 +22,11 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
-// Функция инициализации ImGui
-void initImGui(GLFWwindow* window) {
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	// Загрузка шрифта с кириллицей
-	ImFont* font = io.Fonts->AddFontFromFileTTF(
-		"fonts/arial.ttf",
-		18.0f,
-		nullptr,
-		io.Fonts->GetGlyphRangesCyrillic()
-	);
-	ImGui_ImplGlfw_InitForOpenGL(window, true);
-	ImGui_ImplOpenGL3_Init("#version 130");
-	ImGui::StyleColorsDark();
-}
-
-// Функция очистки
-void cleanup() {
-	ImGui_ImplOpenGL3_Shutdown();
-	ImGui_ImplGlfw_Shutdown();
-	ImGui::DestroyContext();
-}
-
 
 class CtrlGameObjectView
 {
 public:
-
-	
+		
 	void CreateObjects(Game& game, ArrayCube& arrayCubes)
 	{
 		// Создание кубиков
@@ -194,7 +169,7 @@ int main() {
 
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-	initImGui(window);
+	ImgGuiUtility::initImGui(window);
 
 	DialogInput dialogInput;
 	dialogInput.loadFontsSimple();
@@ -207,12 +182,12 @@ int main() {
 	}
 	else {
 		// Обработка Cancel
-		cleanup();
+		ImgGuiUtility::cleanup();
 		glfwTerminate();
 		return 0;
 	}
 
-	cleanup();
+	ImgGuiUtility::cleanup();
 	// Создаем модели игры
 	std::vector<std::wstring> names = { name1 , name2};
 	Game game(2, names);
@@ -241,7 +216,7 @@ int main() {
 	
 	bool isGameStop = false;
 
-	initImGui(window);
+	ImgGuiUtility::initImGui(window);
 
 	while (!glfwWindowShouldClose(window)  ) {
 
@@ -310,7 +285,7 @@ int main() {
 		std::this_thread::sleep_for(std::chrono::milliseconds(16));
 	}
 
-	cleanup();
+	ImgGuiUtility::cleanup();
 	glfwTerminate();
 	return 0;
 }
