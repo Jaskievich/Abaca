@@ -625,7 +625,7 @@ public:
 
     GLuint VAO, VBO, EBO;
 
-    GLuint textTexture;
+    GLuint textTexture = 0;
     float width, height;
     float posX, posY;
     float borderWidth;

@@ -41,8 +41,9 @@ struct BoardGame: public IBoardGameObserver
 	const int PENALTY = 100;
 	int sumScool = 0;
 	int sumTotal = 0;
-	int arr[N_ROW][N_COLUMN] = {};
+	int arr[N_ROW][N_COLUMN] {0};
 
+	
 	void SetSumScool(int val) {
 		if (val == INT_MAX) return;
 		sumScool += val;
