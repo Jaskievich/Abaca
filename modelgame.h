@@ -374,6 +374,13 @@ public:
 	}
 	int calculate( std::vector<int>& dice) const override
 	{
+		return _calculate(dice);
+	}
+
+private:
+	// копия массива
+	int _calculate(std::vector<int> dice) const 
+	{
 		// Сортировка в порядке убывания
 		std::sort(dice.begin(), dice.end(), std::greater<int>());
 		for (int i = 0; i < dice.size() - 1; ++i) {
@@ -394,11 +401,18 @@ public:
 	}
 	int calculate(std::vector<int>& dice) const override
 	{
+		return _calculate(dice);
+	}
+
+private:
+
+	int _calculate(std::vector<int> dice) const
+	{
 		// Сортировка в порядке убывания
 		std::sort(dice.begin(), dice.end(), std::greater<int>());
 		int sum = 0;
 		int i = 0;
-		while( i < dice.size() - 1 ) {
+		while (i < dice.size() - 1) {
 			if (dice[i] == dice[i + 1]) {
 				sum += 2 * dice[i];
 				i++;
@@ -418,15 +432,23 @@ public:
 	}
 	int calculate(std::vector<int>& dice) const override
 	{
-		if( dice.size() < 5 ) return 0;
+		return _calculate(dice);
+	}
+
+private:
+
+	int _calculate(std::vector<int> dice) const
+	{
+		if (dice.size() < 5) return 0;
 		// Сортировка в порядке убывания
 		std::sort(dice.begin(), dice.end(), std::greater<int>());
 		if (dice[0] == dice[1] && dice[2] == dice[4])
 			return 2 * dice[0] + 3 * dice[2];
-		if (dice[0] == dice[2] && dice[3] == dice[4] )
+		if (dice[0] == dice[2] && dice[3] == dice[4])
 			return 3 * dice[0] + 2 * dice[3];
 		return 0;
 	}
+
 };
 
 class StreetSmallCalculator : public ScoreCalculator
@@ -437,6 +459,12 @@ public:
 		symbol = Combination::STREET_SMALL;
 	}
 	int calculate(std::vector<int>& dice) const override
+	{
+		return _calculate(dice);
+	}
+
+private:
+	int _calculate(std::vector<int> dice) const 
 	{
 		// Сортировка в порядке возрастания
 		std::sort(dice.begin(), dice.end());
@@ -458,6 +486,12 @@ public:
 	}
 	int calculate(std::vector<int>& dice) const override
 	{
+		return _calculate(dice);
+	}
+
+private:
+	int _calculate(std::vector<int> dice) const 
+	{
 		// Сортировка в порядке возрастания
 		std::sort(dice.begin(), dice.end());
 		int sum = 0;
@@ -476,7 +510,15 @@ public:
 	{
 		symbol = Combination::THREE_OF_A_KIND;
 	}
-	int calculate( std::vector<int>& dice) const override
+
+	int calculate(std::vector<int>& dice) const override
+	{
+		return _calculate(dice);
+	}
+
+private:
+
+	int _calculate( std::vector<int> dice) const 
 	{
 		// Сортировка в порядке убывания
 		std::sort(dice.begin(), dice.end(), std::greater<int>());
@@ -497,7 +539,15 @@ public:
 	{
 		symbol = Combination::FOUR_OF_A_KIND;
 	}
+
 	int calculate(std::vector<int>& dice) const override
+	{
+		return _calculate(dice);
+	}
+
+private:
+
+	int _calculate(std::vector<int> dice) const 
 	{
 		const int N_FOUR_ADD = 20;
 		// Сортировка в порядке убывания
@@ -519,7 +569,15 @@ public:
 	{
 		symbol = Combination::FIVE_OF_A_KIND;
 	}
+
 	int calculate(std::vector<int>& dice) const override
+	{
+		return _calculate(dice);
+	}
+
+private:
+
+	int _calculate(std::vector<int> dice) const 
 	{
 		const int N_FIVE_ADD = 50;
 		// Сортировка в порядке убывания
